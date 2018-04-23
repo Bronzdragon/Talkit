@@ -331,16 +331,12 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
                     target: { id: new_box.id, port: 'input' }
                 });
 
-                //var link = defaultLink.clone
-
-                //new_link.extend(defaultLink); //Style like the default link.
-
-                // console.dir(new_link);
-                // console.dir("The current text is:\n", this.model.ports.output);
-                // console.dir("The newly created text is:\n", new_box.ports.input);
-                graph.addCells([new_box, new_link]);
-                //graph.addCell();
+                graph.addCell(new_box).addCell(new_link);
+                new_box.trigger('focus');
             });
+        this.listenTo(this.model, 'focus', this.focus);
+    }, 'focus': function(){
+        this.$box.find('textarea').focus();
     }
 });
 
@@ -392,8 +388,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend({
 	},
 
 	removePort: function() {
-		if (this.model.get('outPorts').length > 1)
-		{
+		if (this.model.get('outPorts').length > 1) {
 			var outPorts = this.model.get('outPorts').slice(0);
 			outPorts.pop();
 			this.model.set('outPorts', outPorts);
