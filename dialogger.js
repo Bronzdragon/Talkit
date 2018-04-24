@@ -56,6 +56,36 @@ var allowableConnections = [
 	['dialogue.Branch', 'dialogue.Branch'],
 ];
 
+const CHARACTERS = [
+    { "name": "Alexsi", "url": "alexsi.png" },
+    { "name": "Alexsia", "url": "alexsia.png" },
+    { "name": "Benediktas", "url": "benediktas.png" },
+    { "name": "Burgundy", "url": "burgundy.png" },
+    { "name": "Cynthia", "url": "cynthia.png" },
+    { "name": "Danielle", "url": "danielle.png" },
+    { "name": "Ditri", "url": "ditri.png" },
+    { "name": "Dominic", "url": "dominic.png" },
+    { "name": "Dragon", "url": "dragon.png" },
+    { "name": "Funk", "url": "funk.png" },
+    { "name": "Guy", "url": "guy.png" },
+    { "name": "Han Seon", "url": "han_seon.png" },
+    { "name": "Hayate", "url": "hayate.png" },
+    { "name": "Hoglan", "url": "hoglan.png" },
+    { "name": "Judah", "url": "judah.png" },
+    { "name": "Lars", "url": "lars.png" },
+    { "name": "Maxim", "url": "maxim.png" },
+    { "name": "Nanu", "url": "nanu.png" },
+    { "name": "Nora", "url": "nora.png" },
+    { "name": "Prussia", "url": "prussia.png" },
+    { "name": "Rhino", "url": "rhino.png" },
+    { "name": "Samira", "url": "samira.png" },
+    { "name": "Snake", "url": "snake.png" },
+    { "name": "Stephan", "url": "stephan.png" },
+    { "name": "TripXerx", "url": "tripXerx.png" },
+    { "name": "Valarie", "url": "valarie.png" },
+    { "name": "unknown", "url": "unknown.png" }
+];
+
 function validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
 	// Prevent loop linking
 	if (magnetS == magnetT || cellViewS == cellViewT)
