@@ -327,6 +327,7 @@ joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend({
 });
 joint.shapes.dialogue.NodeView = joint.shapes.dialogue.BaseView;
 
+
 joint.shapes.dialogue.Text = joint.shapes.devs.Model.extend({
 	'defaults': joint.util.deepSupplement({
 			type: 'dialogue.Text',
@@ -342,12 +343,23 @@ joint.shapes.dialogue.Text = joint.shapes.devs.Model.extend({
 	),
 });
 joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
+
+    template: [
+        '<div class="node">',
+            //'<span class="label"></span>',
+            '<button class="delete">x</button>',
+            '<img class="portrait" alt="Character portrait" src="images\\characters\\unknown.png" />',
+            '<select type="actor" class="actor" />',
+            '<p> <textarea type="text" class="name" rows="4" cols="27" placeholder="Speech"></textarea> </p>',
+        '</div>',
+    ].join(''),
+
     'initialize': function() {
         joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 
         // Create the dropdown element.
-        this.$box.$character_select = $(document.createElement("select"))
-            .addClass('actor');
+        this.$box.$img = this.$box.find('img.portrait');
+        this.$box.$character_select = this.$box.find('select.actor');
 
         // Fill the dropdown element
         for (let char of CHARACTERS) {
@@ -362,17 +374,6 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
             this.model.set('actor', $(event.target).val());
         });
 
-        // Place the dropdown element.
-        this.$box.find('input.actor').replaceWith(this.$box.$character_select);
-
-        // Create the image element.
-        this.$box.$img = $(document.createElement('img'));
-        this.$box.$img.attr('src', 'images\\characters\\unknown.png');
-
-        // Place the image element.
-        this.$box.$character_select.after(this.$box.$img);
-
-
 
         this.$box.find('textarea')
             .keypress(event => {
@@ -385,15 +386,18 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
                 let bounding_box = this.model.getBBox();
                 let new_box = new joint.shapes.dialogue.Text({position: {x: bounding_box.x , y: bounding_box.y + bounding_box.height + 10}});
 
-                var new_link = new joint.shapes.devs.Link({
-                    source: { id: this.model.id, port: 'output' },
-                    target: { id: new_box.id, port: 'input' }
-                });
 
-                graph.addCell(new_box).addCell(new_link);
+                let new_link = defaultLink.clone();
+                new_link.set('source', { id: this.model.id, port: 'output' });
+                new_link.set('target', { id: new_box.id, port: 'input' });
+
+                graph.addCells([new_box, new_link]);
                 new_box.trigger('focus');
+
+                event.preventDefault();
             }).keydown(event => { // Using keydown instead of keypress, because it doesn't work correctly in Google Chrome
-                if (!event.altKey){ return true; }
+                if (!event.altKey) return;
+
                 let options = CHARACTERS.map(element => element.name);
 
                 //this.$box.$character_select; // Our dropdown menu.
@@ -405,9 +409,8 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
                         break;
                     }
                 }
-
                 event.preventDefault();
-            });
+            }); // End of TextArea
         this.listenTo(this.model, 'focus', this.focus);
     },
 
@@ -419,15 +422,13 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
         joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 
         // Update the actor dropdown.
-        this.$box.find('select.actor').val(this.model.get('actor'));
+        this.$box.find('select.actor').val(this.model.get('actor') || 'unknown');
 
         // Update the actor image
         let selectedChar = CHARACTERS.find(element => element.name === this.model.get('actor'));
         this.$box.find('img').attr('src', `images\\characters\\${ selectedChar ? selectedChar.url : 'unknown.png' }`);
     }
-
 });
-
 
 
 joint.shapes.dialogue.Choice = joint.shapes.devs.Model.extend({
@@ -925,7 +926,7 @@ $('#paper').contextmenu( {
 		{ text: 'Choice', alias: '1-2', action: add(joint.shapes.dialogue.Choice) },
 		{ text: 'Branch', alias: '1-3', action: add(joint.shapes.dialogue.Branch) },
 		{ text: 'Set', alias: '1-4', action: add(joint.shapes.dialogue.Set) },
-		{ text: 'Node', alias: '1-5', action: add(joint.shapes.dialogue.Node) },
+		//{ text: 'Node', alias: '1-5', action: add(joint.shapes.dialogue.Node) },
 		{ type: 'splitLine' },
 		{ text: 'Save', alias: '2-1', action: save },
 		{ text: 'Load', alias: '2-2', action: load },
