@@ -345,6 +345,35 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
     'initialize': function() {
         joint.shapes.dialogue.BaseView.prototype.initialize.apply(this, arguments);
 
+        // Create the dropdown element.
+        this.$box.$character_select = $(document.createElement("select"))
+            .addClass('actor');
+
+        // Fill the dropdown element
+        for (let char of CHARACTERS) {
+            let $character_option = $(document.createElement("option"))
+                .attr('value', char.name)
+                .text(char.name);
+
+            this.$box.$character_select.append($character_option);
+        }
+
+        this.$box.$character_select.change(event => {
+            this.model.set('actor', $(event.target).val());
+        });
+
+        // Place the dropdown element.
+        this.$box.find('input.actor').replaceWith(this.$box.$character_select);
+
+        // Create the image element.
+        this.$box.$img = $(document.createElement('img'));
+        this.$box.$img.attr('src', 'images\\characters\\unknown.png');
+
+        // Place the image element.
+        this.$box.$character_select.after(this.$box.$img);
+
+
+
         this.$box.find('textarea')
             .keypress(event => {
                 if (event.key === "Enter" && !event.shiftKey) {
@@ -365,9 +394,24 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
                 new_box.trigger('focus');
             });
         this.listenTo(this.model, 'focus', this.focus);
-    }, 'focus': function(){
+    },
+
+    'focus': function() {
         this.$box.find('textarea').focus();
+    },
+
+    'updateBox': function() {
+        joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
+
+        console.log("Updating stuff.");
+        let actorField = this.$box.find('select.actor');
+        actorField.val(this.model.get('actor'));
+        let imageField = this.$box.find('img');
+        let selectedChar = CHARACTERS.find(element => element.name === this.model.get('actor'));
+        imageField.attr('src', `images\\characters\\${ selectedChar ? selectedChar.url : 'unknown.png' }`);
+
     }
+
 });
 
 
