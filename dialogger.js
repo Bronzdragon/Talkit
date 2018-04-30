@@ -392,6 +392,21 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
 
                 graph.addCell(new_box).addCell(new_link);
                 new_box.trigger('focus');
+            }).keydown(event => { // Using keydown instead of keypress, because it doesn't work correctly in Google Chrome
+                if (!event.altKey){ return true; }
+                let options = CHARACTERS.map(element => element.name);
+
+                //this.$box.$character_select; // Our dropdown menu.
+                let offset = this.$box.$character_select.prop('selectedIndex') + 1;
+                for (var i = 0; i < options.length; i++) {
+                    let index = (i + offset) % options.length;
+                    if (options[index].charAt(0).toLowerCase() === event.key.toLowerCase()) {
+                        this.model.set('actor', options[index]);
+                        break;
+                    }
+                }
+
+                event.preventDefault();
             });
         this.listenTo(this.model, 'focus', this.focus);
     },
@@ -403,13 +418,12 @@ joint.shapes.dialogue.TextView = joint.shapes.dialogue.BaseView.extend({
     'updateBox': function() {
         joint.shapes.dialogue.BaseView.prototype.updateBox.apply(this, arguments);
 
-        console.log("Updating stuff.");
-        let actorField = this.$box.find('select.actor');
-        actorField.val(this.model.get('actor'));
-        let imageField = this.$box.find('img');
-        let selectedChar = CHARACTERS.find(element => element.name === this.model.get('actor'));
-        imageField.attr('src', `images\\characters\\${ selectedChar ? selectedChar.url : 'unknown.png' }`);
+        // Update the actor dropdown.
+        this.$box.find('select.actor').val(this.model.get('actor'));
 
+        // Update the actor image
+        let selectedChar = CHARACTERS.find(element => element.name === this.model.get('actor'));
+        this.$box.find('img').attr('src', `images\\characters\\${ selectedChar ? selectedChar.url : 'unknown.png' }`);
     }
 
 });
@@ -442,7 +456,6 @@ joint.shapes.dialogue.Branch = joint.shapes.devs.Model.extend({
 		joint.shapes.dialogue.Base.prototype.defaults
 	),
 });
-
 joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend({
 	template: [
 		'<div class="node">',
@@ -641,7 +654,7 @@ function gameData() {
 
 
 var filename = null;
-var defaultFilename = 'dialogue.json';
+const defaultFilename = 'dialogue.json';
 
 function flash(text) {
 	var $flash = $('#flash');
