@@ -125,12 +125,11 @@ function validateMagnet(cellView, magnet) {
 		if (link.attributes.source.id === cellView.model.id && link.attributes.source.port === magnet.attributes.port.nodeValue)
 		{
 			// This port already has a connection
-			if (unlimitedConnections && link.attributes.target.id)
-			{
+			if (unlimitedConnections && link.attributes.target.id) {
 				var targetCell = graph.getCell(link.attributes.target.id);
 				if (unlimitedConnections.indexOf(targetCell.attributes.type) !== -1)
 					// It's okay because this target type has unlimited connections
-					return true;
+					return false;
 			}
 			return false;
 		}
@@ -246,7 +245,7 @@ joint.shapes.dialogue.Node = joint.shapes.devs.Model.extend({
 			inPorts: ['input'],
 			outPorts: ['output'],
 			attrs: {
-				'.outPorts circle': { unlimitedConnections: ['dialogue.Choice'], }
+				'.outPorts circle': { unlimitedConnections: [/*'dialogue.Choice'*/], }
 			},
 		},
 		joint.shapes.dialogue.Base.prototype.defaults
@@ -394,14 +393,20 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.devs.ModelView.extend({
         this.$box.find('idd').on('mousedown click', function (evt) { evt.stopPropagation(); });
 
         // This is an example of reacting on the input change and storing the input data in the cell model.
-        this.$box.find('textarea.name').on('change', _.bind(function (evt) {
+        /* this.$box.find('textarea.name').on('change', _.bind(function (evt) {
             this.model.set('name', $(evt.target).val());
-        }, this));
+        }, this)); */
 
         // This is an example of reacting on the input change and storing the input data in the cell model.
-        this.$box.find('input.title').on('change', _.bind(function (evt) {
+        /*this.$box.find('input.title').on('change', _.bind(function (evt) {
             this.model.set('title', $(evt.target).val());
-        }, this));
+        }, this));*/
+
+        this.$box.find('input.choice').change(event =>{
+            console.log("Setting a new choice value!");
+            console.log(`\tID is: ${event.target.id} and the value is "${$(event.target).val()}".`);
+            this.model.set(event.target.id, $(event.target).val());
+        });
 
         this.$box.find('.delete').on('click', _.bind(this.model.remove, this.model));
         // Update the box position whenever the underlying model changes.
@@ -423,7 +428,18 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.devs.ModelView.extend({
         // Set the position and dimension of the box so that it covers the JointJS element.
         var bbox = this.model.getBBox();
         // Example of updating the HTML with a data stored in the cell model.
-        let nameField = this.$box.find('textarea.name');
+        this.$box.find('input.choice').each((index, element) => {
+            if (!$(element).is(':focus')) {
+
+                //console.dir($(this));
+                console.log("The ID: " + (element.id + "\n\tThe Value: " + this.model.get(element.id)));
+                //console.log("Updating this input!");
+                $(element).val(this.model.get(element.id));
+            }
+        });
+
+
+        /*let nameField = this.$box.find('textarea.name');
         if (!nameField.is(':focus'))
             nameField.val(this.model.get('name'));
 
@@ -436,10 +452,9 @@ joint.shapes.dialogue.ChoiceView = joint.shapes.devs.ModelView.extend({
         var label = this.$box.find('.label');
         var type = this.model.get('type').slice('dialogue.'.length);
         label.text(type);
-        label.attr('class', 'label ' + type);
+        label.attr('class', 'label ' + type);*/
 
-
-        this.$box.css({ width: bbox.width, height: bbox.height, left: bbox.x, top: bbox.y, transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)' });
+        this.$box.css({ width: bbox.width, /*height: bbox.height,*/ left: bbox.x, top: bbox.y, transform: 'rotate(' + (this.model.get('angle') || 0) + 'deg)' });
     },
 
     removeBox: function(event) { this.$box.remove(); }
@@ -503,21 +518,20 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend({
 		var valueFields = this.$box.find('input.value');
 
 		// Add value fields if necessary
-		for (var i = valueFields.length; i < values.length; i++)
-		{
+		for (var i = valueFields.length; i < values.length; i++) {
+            /* jshint loopfunc: true */
 			// Prevent paper from handling pointerdown.
-			var field = $('<input type="text" class="value" />');
-			field.attr('placeholder', 'Value ' + (i + 1).toString());
-			field.attr('index', i);
+			var field = $('<input type="text" class="value" />')
+                .attr('placeholder', 'Value ' + (i + 1).toString())
+                .attr('index', i)
+                .on('mousedown click', evt => { evt.stopPropagation(); })
+                .change(evt => { // This is an example of reacting on the input change and storing the input data in the cell model.
+                    var values = this.model.get('values').slice(0);
+                    values[$(evt.target).attr('index')] = $(evt.target).val();
+                    this.model.set('values', values);
+                });
 			this.$box.append(field);
-			field.on('mousedown click', evt => { evt.stopPropagation(); });
 
-			// This is an example of reacting on the input change and storing the input data in the cell model.
-			field.on('change', _.bind(evt => {
-				var values = this.model.get('values').slice(0);
-				values[$(evt.target).attr('index')] = $(evt.target).val();
-				this.model.set('values', values);
-			}, this));
 		}
 
 		// Remove value fields if necessary
@@ -534,8 +548,7 @@ joint.shapes.dialogue.BranchView = joint.shapes.dialogue.BaseView.extend({
 		}
 	},
 
-	updateSize: function()
-	{
+	updateSize: function() {
 		var textField = this.$box.find('input.name');
 		var height = textField.outerHeight(true);
 		this.model.set('size', { width: 200, height: 100 + Math.max(0, (this.model.get('outPorts').length - 1) * height) });
